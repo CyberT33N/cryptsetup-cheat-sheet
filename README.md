@@ -32,7 +32,50 @@ __________________________________________________
 # Guides
 - Encrypt your Hard Drive/Partition in Linux (https://www.youtube.com/watch?v=ch-wzDyo-wU)
 - Auto-mount Encrypted partitions at boot (https://www.youtube.com/watch?v=dT4kvmpCJfs)
+```bash
+# Encrypt your Hard Drive/Partition in Linux #
+sudo apt install cryptsetup
 
+sudo cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat /dev/yourpartition
+
+sudo cryptsetup luksOpen /dev/yourpartition yourpartition
+
+sudo fdisk -l
+
+sudo mkfs.ext4 /dev/mapper/yourpartition
+
+# If you do not use system drive
+sudo tune2fs -m 0 /dev/mapper/yourpartition
+
+sudo mkdir /mnt/encrypted
+
+sudo mount /dev/mapper/yourpartition /mnt/encrypted
+
+sudo touch /mnt/encrypted/test.txt
+
+sudo chown -R `whoami`:users /mnt/encrypted
+
+sudo umount /dev/mapper/yourpartition
+
+sudo cryptsetup luksClose yourpartition
+
+
+
+
+# Auto-mount Encrypted partitions at boot #
+
+lsblk
+
+sudo cryptsetup luksUUID /dev/yourpartition
+
+sudo nano /etc/crypttab
+sdb1 /dev/disk/by-uuid/your-uuid-here none luks
+
+sudo mkdir /mnt/encrypted_yourpartition
+
+sudo nano /etc/fstab
+/dev/mapper/sdb1 /mnt/encrypted_yourpartition    ext4   defaults   0  2
+```
 
 
 
@@ -78,7 +121,7 @@ __________________________________________________
 
 # Encrypt Partition
 ```bash
-sudo cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat /your/partition
+sudo cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat /dev/yourpartition
 ```
 
 
