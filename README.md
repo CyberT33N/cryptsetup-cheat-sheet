@@ -20,6 +20,37 @@ sudo dnf install cryptsetup-luks
 
 
 
+
+
+
+
+
+<br><br>
+__________________________________________________
+<br><br>
+
+# Guides
+- Encrypt your Hard Drive/Partition in Linux (https://www.youtube.com/watch?v=ch-wzDyo-wU)
+- Auto-mount Encrypted partitions at boot (https://www.youtube.com/watch?v=dT4kvmpCJfs)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <br><br>
 __________________________________________________
 <br><br>
