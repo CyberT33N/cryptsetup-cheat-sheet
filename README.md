@@ -83,6 +83,25 @@ ls /dev/mapper
 mkfs.btrfs /dev/mapper/cryptdata
 
 
+
+
+## https://youtu.be/yRSElRlp7TQ?t=445 ##
+## optional - optimise boot options - start ## 
+gedit /usr/lib/partman/mount.d/70btrfs
+- edit for / "subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd"
+- edit for /home "subvol=@home,ssd,noatime,space_cache,commit=120,compress=zstd"
+
+gedit /usr/lib/partman/fstab.d/btrfs
+- edit "pass=0"
+- edit for / "subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd"
+- edit for /home "subvol=@home,ssd,noatime,space_cache,commit=120,compress=zstd"
+- edit "$home_options" 0 0
+## optional - optimise boot options - end ## 
+
+
+
+
+
 # run your installation process
 # on ubuntu
 ubiquity --no-bootloader
