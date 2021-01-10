@@ -69,7 +69,7 @@ ubiquity --no-bootloader
 # Create a chroot environment and enter your system
 mount -o subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd /dev/mapper/cryptdata /mnt
 for i in /dev /dev/pts /proc /sys /run; do sudo mount -B $i /mnt$i; done
-# if you get warning that /mnt/etc/resolv.conf is the same then delete it with rm /mnt/etc/resolv.conf and re-run the copy command
+rm /mnt/etc/resolv.conf
 sudo cp /etc/resolv.conf /mnt/etc/
 sudo chroot /mnt
 
