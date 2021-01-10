@@ -132,7 +132,7 @@ mount -av
 
 # create keyfile
 mkdir /etc/luks
-dd if=/dev/urandom of=/etc/luks/boot_os.keyfile bs=4096 count=4
+dd if=/dev/urandom of=/etc/luks/boot_os.keyfile bs=4096 count=1
 chmod u=rx,go-rwx /etc/luks
 chmod u=r,go-rwx /etc/luks/boot_os.keyfile
 cryptsetup luksAddKey /dev/sda3 /etc/luks/boot_os.keyfile
