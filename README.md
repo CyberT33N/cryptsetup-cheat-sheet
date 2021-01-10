@@ -48,6 +48,7 @@ mkpart primary 1MiB 513MiB
 mkpart primary 513MiB 4609MiB
 # root
 mkpart primary 4609MiB 100%
+q
 
 # create luks partition
 cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat --type=luks1 /dev/sda3
