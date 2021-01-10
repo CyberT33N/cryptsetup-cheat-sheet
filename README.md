@@ -86,7 +86,7 @@ echo "cryptdata UUID=${UUIDSDA3} none luks" >> /etc/crypttab
 
 # create encrypted Swap partition
 export SWAPUUID=$(blkid -s UUID -o value /dev/sda2)
-echo "cryptswap UUID=${SWAPUUID} /dev/urandom swap,offset=1024,cipher=aes-xts-plain64,size=512" >> /etc/crypttab
+echo "cryptswap UUID=${SWAPUUID} /dev/urandom swap,offset=1024,cipher=serpent-xts-plain64,size=512" >> /etc/crypttab
 
 # adapt the fstab accordingly
 sed -i "s|UUID=${SWAPUUID}|/dev/mapper/cryptswap|" /etc/fstab
