@@ -33,202 +33,78 @@ __________________________________________________
 - Ubuntu 20.04 btrfs-luks full disk encryption including /boot and auto-APT snapshots with Timeshift (https://www.youtube.com/watch?v=yRSElRlp7TQ)
 - https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
 ```bash
-- usi efi bootloader
-
-- boot from cd and run "try mode"
-
-
-mount | grep efivars
--> should sa efivars on /sys/firmware/efi/efivars
-
-
-# cache admin session
+# create temp admin sessions
 sudo -i
 
-
-# get name of your harddrive (mostly sda)
-lsblk
-
-
-# partition your harddrive
+# create partitions
 parted /dev/sda
 mklabel gpt
-# create efi partition
+# EFI
 mkpart primary 1MiB 513MiB
-# create swap partition 4GB
+# swap
 mkpart primary 513MiB 4609MiB
-# create root file system with remaining free space
+# root
 mkpart primary 4609MiB 100%
-#check if it works
-print
-#exit
-q
-
-
-# install gparted to verify that it worked
-dnf install gparted
-
 
 # create luks partition
-sudo cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat /dev/sda3
+cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat --type=luks1 /dev/sda3
 
-
-# creater mappe device
+# map encrypted partition to "cryptdat". You can use other name if you want
 cryptsetup luksOpen /dev/sda3 cryptdata
 
-# check if it worked
-ls /dev/mapper
-
-
+# pre-format cryptdata
 mkfs.btrfs /dev/mapper/cryptdata
 
-
-
-
-## https://youtu.be/yRSElRlp7TQ?t=445 ##
-## optional - optimise boot options - start ## 
-gedit /usr/lib/partman/mount.d/70btrfs
-- edit for / "subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd"
-- edit for /home "subvol=@home,ssd,noatime,space_cache,commit=120,compress=zstd"
-
-gedit /usr/lib/partman/fstab.d/btrfs
-- edit "pass=0"
-- edit for / "subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd"
-- edit for /home "subvol=@home,ssd,noatime,space_cache,commit=120,compress=zstd"
-- edit "$home_options" 0 0
-## optional - optimise boot options - end ## 
-
-
-
-
-
-# run your installation process
-# on ubuntu
+# install ubuntu
 ubiquity --no-bootloader
+# Select /dev/sda1, press the Change button. Choose Use as ‘EFI System Partition’.
+# Select /dev/sda2, press the Change button. Choose Use as ‘swap area’ to create a swap partition. We will encrypt this partition later in the crypttab.
+# Select the root filesystem device for formatting (/dev/mapper/cryptdata type btrfs on top), press the Change button. Choose Use as ‘btrfs journaling filesystem’, check Format the partition and use ‘/’ as Mount point.
+# Recheck everything, press the Install Now button to write the changes to the disk and hit the Continue button. Select the time zone and fill out your user name and password. If your installation is successful choose the Continue Testing option. DO NOT REBOOT!, but return to your terminal.
 
-# go to partition manager while ask where to install "something else"
-- on sda1 choose "efi system partition"
-- on sda2 choose "swap"
-- on /dev/mapper/cryptdata btrfs choose "btrfs journaling file system"
-check "format the partition"
-mount point "/"
-
-- Install Ubuntu
-- After finish click "Continue Testing"
-
-
+# Create a chroot environment and enter your system
 mount -o subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd /dev/mapper/cryptdata /mnt
+for i in /dev /dev/pts /proc /sys /run; do sudo mount -B $i /mnt$i; done
+# if you get warning that /mnt/etc/resolv.conf is the same then delete it with rm /mnt/etc/resolv.conf and re-run the copy command
+sudo cp /etc/resolv.conf /mnt/etc/
+sudo chroot /mnt
 
-for n in proc sys dev etc/resolv.conf; do mount --rbind /$n /mnt/$n; done
-
-chroot /mnt
-
-# check if worked and mnt can be found
-ls
-
-
-# mount everything
+# Now you are actually inside your system, so let’s mount all other partitions and have a look at the btrfs subvolumes:
 mount -av
+# /                        : ignored
+# /boot/efi                : successfully mounted
+# /home                    : successfully mounted
+# none                     : ignored
 
-# create keyfile
-mkdir /etc/luks
-dd if=/dev/urandom of=/etc/luks/boot_os.keyfile bs=4096 count=1
-chmod u=rx,go-rwx /etc/luks
-chmod u=r,go-rwx /etc/luks/boot_os.keyfile
-cryptsetup luksAddKey /dev/sda3 /etc/luks/boot_os.keyfile
+# Create crypttab
+export UUIDSDA3=$(blkid -s UUID -o value /dev/sda3)
+echo "cryptdata UUID=${UUIDSDA3} none luks" >> /etc/crypttab
 
-# check if it worked
-cryptsetup luksDump /dev/sda3 | grep "Key Slot"
+# create encrypted Swap partition
+export SWAPUUID=$(blkid -s UUID -o value /dev/sda2)
+echo "cryptswap UUID=${SWAPUUID} /dev/urandom swap,offset=1024,cipher=aes-xts-plain64,size=512" >> /etc/crypttab
 
+# adapt the fstab accordingly
+sed -i "s|UUID=${SWAPUUID}|/dev/mapper/cryptswap|" /etc/fstab
 
-# prevent leaking key material
-nano /etc/cryptsetup-initramfs/conf-hook
-- scroll to bottom of file and change:
-KEYFILE_PATTERN=/etc/luks/*.keyfile
+# Install the EFI bootloader
+echo "GRUB_ENABLE_CRYPTODISK=y" >> /etc/default/grub
 
-nano /etc/initramfs-tools/initramfs.conf
-- scroll to bottom and add:
-UMASK=0077
-
-
-
-# check if crypttab exist
-cat /etc/crypttab
-
-# get UUID of luks partition - in our case of sda3
-blkid
-
-# create crypttab
-nano /etc/crypttab
-cryptdata UUID=************ /etc/luks/boot_os.keyfile luks
-
-
-
-# create encrypted swap partition
-# get UUID of swap partition - in our case of sda2
-blkid
-nano /etc/crypttab
-cryptswap UUID=************ /dev/urandom swap,offset=1024,cipher=serpent-xts-plain64,size=512
-
-nano /etc/fstab
-- change swap UUID=****** to:
-/dev/mapper/cryptswap
-
-
-
-########## I guess optional - START ##############
-# create another swap file/subvolume
-mount -o subvolid=5 /dev/mapper/cryptdata /mnt
-btrfs subvolume create /mnt/@swap
-
-# make sure not another swap file is in usage
-swapoff /swapfile
-# if it exist run:
-# rm /swapfile
-
-# prepare the new swapfile
-truncate -s 0 /mnt/@swap/swapfile
-chattr +C /mnt/@swap/swapfile
-btrfs property set /mnt/@swap/swapfile compression none
-fallocate -l 4G /mnt/@swap/swapfile
-chmod 600 /mnt/@swap/swapfile
-mkswap /mnt/@swap/swapfile
-
-
-# mount subvolume
-mkdir /mnt/@/swap
-nano /mnt/@/etc/fstab
-# add the new swap file
-/dev/mapper/cryptdata /swap btrfs  subvol=@swap,compress=no 0 0
-/swap/swapfile none swap sw 0 0
-########## I guess optional - END ##############
-
-
-# unmount top volume
-unmount /mnt
-
-nano /etc/default/grub
-- change GRUB_CMDLINE_LINUX_DEFAULT=""
-- add GRUB_ENABLE_CRYPTODISK=y
-
-apt install -y --reinstall grub-efi-amd64-signed linux-generic linux-headers-generic
-
+apt install -y --reinstall grub-efi-amd64-signed linux-generic linux-headers-generic linux-generic-hwe-20.04 linux-headers-generic-hwe-20.04
 update-initramfs -c -k all
-
-
 grub-install /dev/sda
 update-grub
 
-# check if key is correctly stored
-lsinitramfs /boot/initrd.img | grep "^cryptroot/keyfiles/"
-
-
 exit
 reboot now
-
 ```
 
+
+
+
 <br><br>
+
+
 
 - Encrypt your Hard Drive/Partition in Linux (https://www.youtube.com/watch?v=ch-wzDyo-wU)
 - Auto-mount Encrypted partitions at boot (https://www.youtube.com/watch?v=dT4kvmpCJfs)
