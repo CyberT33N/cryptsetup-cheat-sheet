@@ -34,6 +34,7 @@ __________________________________________________
 - https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
 ```bash
 # enable EFI for this guide
+# use "try ubuntu" when you boot from ubuntu DVD
 
 # create temp admin sessions
 sudo -i
