@@ -33,6 +33,8 @@ __________________________________________________
 - Ubuntu 20.04 btrfs-luks full disk encryption including /boot and auto-APT snapshots with Timeshift (https://www.youtube.com/watch?v=yRSElRlp7TQ)
 - https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
 ```bash
+# enable EFI for this guide
+
 # create temp admin sessions
 sudo -i
 
