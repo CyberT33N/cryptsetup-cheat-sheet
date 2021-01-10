@@ -144,3 +144,27 @@ __________________________________________________
 ```bash
 sudo mkfs.ext4 /dev/mapper/yourusername
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+__________________________________________________
+<br><br>
+
+# get UUID of encrypted partition
+```bash
+sudo cryptsetup luksUUID /etc/encryptedpartition
+```
+
