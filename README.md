@@ -69,6 +69,7 @@ lsblk
 sudo cryptsetup luksUUID /dev/yourpartition
 
 sudo nano /etc/crypttab
+# if your system drive is not encrypted then we use none
 sdb1 /dev/disk/by-uuid/your-uuid-here none luks
 
 sudo mkdir /mnt/encrypted_yourpartition
