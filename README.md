@@ -30,6 +30,8 @@ __________________________________________________
 <br><br>
 
 # Guides
+
+## full disk with system
 - Ubuntu 20.04 btrfs-luks full disk encryption including /boot and auto-APT snapshots with Timeshift (https://www.youtube.com/watch?v=yRSElRlp7TQ)
 - https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
 ```bash
@@ -127,7 +129,7 @@ reboot now
 <br><br>
 
 
-
+## external hard drive & partition
 - Encrypt your Hard Drive/Partition in Linux (https://www.youtube.com/watch?v=ch-wzDyo-wU)
 - Auto-mount Encrypted partitions at boot (https://www.youtube.com/watch?v=dT4kvmpCJfs)
 ```bash
