@@ -87,9 +87,27 @@ echo "cryptdata UUID=${UUIDSDA3} none luks" >> /etc/crypttab
 # create encrypted Swap partition
 export SWAPUUID=$(blkid -s UUID -o value /dev/sda2)
 echo "cryptswap UUID=${SWAPUUID} /dev/urandom swap,offset=1024,cipher=serpent-xts-plain64,size=512" >> /etc/crypttab
-
 # adapt the fstab accordingly
 sed -i "s|UUID=${SWAPUUID}|/dev/mapper/cryptswap|" /etc/fstab
+
+# Add a key-file to type luks passphrase only once
+mkdir /etc/luks
+dd if=/dev/urandom of=/etc/luks/boot_os.keyfile bs=4096 count=1
+chmod u=rx,go-rwx /etc/luks
+chmod u=r,go-rwx /etc/luks/boot_os.keyfile
+cryptsetup luksAddKey /dev/sda3 /etc/luks/boot_os.keyfile
+cryptsetup luksDump /dev/vda3 | grep "Key Slot"
+# Key Slot 0: ENABLED
+# Key Slot 1: ENABLED
+# Key Slot 2: DISABLED
+# Key Slot 3: DISABLED
+# Key Slot 4: DISABLED
+# Key Slot 5: DISABLED
+# Key Slot 6: DISABLED
+# Key Slot 7: DISABLED
+echo "KEYFILE_PATTERN=/etc/luks/*.keyfile" >> /etc/cryptsetup-initramfs/conf-hook
+echo "UMASK=0077" >> /etc/initramfs-tools/initramfs.conf
+sed -i "s|none|/etc/luks/boot_os.keyfile|" /etc/crypttab
 
 # Install the EFI bootloader
 echo "GRUB_ENABLE_CRYPTODISK=y" >> /etc/default/grub
