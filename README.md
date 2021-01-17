@@ -36,6 +36,12 @@ __________________________________________________
 - https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
 ```bash
 # enable EFI for this guide
+
+# check if EFI is enabled
+mount | grep efivars
+# efivarfs on /sys/firmware/efi/efivars type efivarfs (rw,nosuid,nodev,noexec,relatime)
+
+
 # use "try ubuntu" when you boot from ubuntu DVD
 
 # create temp admin sessions
