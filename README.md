@@ -127,6 +127,51 @@ update-grub
 
 exit
 reboot now
+
+
+
+
+
+# ---- Install Timeshift for auto snapshot ----
+sudo apt install -y btrfs-progs git make timeshift
+
+# start GUI
+sudo timeshift-gtk
+
+# Select “BTRFS” as the “Snapshot Type”; continue with “Next”
+# Choose your BTRFS system partition as “Snapshot Location”; continue with “Next”
+# “Select Snapshot Levels” (type and number of snapshots that will be automatically created and managed/deleted by Timeshift), my recommendations:
+# Activate “Monthly” and set it to 1
+# Activate “Weekly” and set it to 3
+# Activate “Daily” and set it to 5
+# Deactivate “Hourly”
+# Activate “Boot” and set it to 3
+# Activate “Stop cron emails for scheduled tasks”
+# continue with “Next”
+# I also include the @home subvolume (which is not selected by default). Note that when you restore a snapshot Timeshift you get the choise whether you want to restore it as well (which in most cases you don’t want to).
+# Click “Finish”
+# “Create” a manual first snapshot & exit Timeshift
+
+# Timeshift will now check every hour if snapshots (“hourly”, “daily”, “weekly”, “monthly”, “boot”) need to be created or deleted. Note that “boot” snapshots will not be created directly but about 10 minutes after a system startup.
+
+# Timeshift puts all snapshots into /run/timeshift/backup. Conveniently, the real root (subvolid 5) of your BTRFS partition is also mounted here, so it is easy to view, create, delete and move around snapshots manually.
+
+# Now let’s install timeshift-autosnap-apt and grub-btrfs from GitHub
+git clone https://github.com/wmutschl/timeshift-autosnap-apt.git /home/$USER/timeshift-autosnap-apt
+cd /home/$USER/timeshift-autosnap-apt
+sudo make install
+
+git clone https://github.com/Antynea/grub-btrfs.git /home/$USER/grub-btrfs
+cd /home/$USER/grub-btrfs
+sudo make install
+
+# After this, optionally, make changes to the configuration files:
+sudo nano /etc/timeshift-autosnap-apt.conf
+sudo nano /etc/default/grub-btrfs/config
+# For example, as we don’t have a dedicated /boot partition, we can set snapshotBoot=false in the timeshift-autosnap-apt-conf file to not rsync the /boot directory to /boot.backup. Note that the EFI partition is still rsynced into your snapshot to /boot.backup/efi. For grub-btrfs, I change GRUB_BTRFS_SUBMENUNAME to “MY BTRFS SNAPSHOTS”.
+
+// check if everything is wokring
+sudo timeshift-autosnap-apt
 ```
 
 
