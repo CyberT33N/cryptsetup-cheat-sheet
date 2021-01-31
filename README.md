@@ -72,7 +72,12 @@ ubiquity --no-bootloader
 # Select /dev/sda1, press the Change button. Choose Use as ‘EFI System Partition’.
 # Select /dev/sda2, press the Change button. Choose Use as ‘swap area’ to create a swap partition. We will encrypt this partition later in the crypttab.
 # Select the root filesystem device for formatting (/dev/mapper/cryptdata type btrfs on top), press the Change button. Choose Use as ‘btrfs journaling filesystem’, check Format the partition and use ‘/’ as Mount point.
-# Recheck everything, press the Install Now button to write the changes to the disk and hit the Continue button. Select the time zone and fill out your user name and password. If your installation is successful choose the Continue Testing option. DO NOT REBOOT!, but return to your terminal.
+# Recheck everything, press the Install Now button to write the changes to the disk and hit the Continue button. 
+# If you get error **The attempt to mount a file system with type vfat** then use: mkfs.vfat /dev/sda1
+# Select the time zone and fill out your user name and password. If your installation is successful choose the Continue Testing option. DO NOT REBOOT!, but return to your terminal.
+
+
+
 
 # Create a chroot environment and enter your system
 mount -o subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd /dev/mapper/cryptdata /mnt
