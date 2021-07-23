@@ -293,6 +293,41 @@ sudo cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksF
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+__________________________________________________
+<br><br>
+
+# Decrypt Partition
+```bash
+sudo cryptsetup luksOpen /dev/yourpartition yourpartition
+```
+
+
+
+
+
+
+
 <br><br>
 __________________________________________________
 <br><br>
