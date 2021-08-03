@@ -109,7 +109,7 @@ dd if=/dev/urandom of=/etc/luks/boot_os.keyfile bs=4096 count=1
 chmod u=rx,go-rwx /etc/luks
 chmod u=r,go-rwx /etc/luks/boot_os.keyfile
 cryptsetup luksAddKey /dev/sda3 /etc/luks/boot_os.keyfile
-cryptsetup luksDump /dev/vda3 | grep "Key Slot"
+cryptsetup luksDump /dev/sda3 | grep "Key Slot"
 # Key Slot 0: ENABLED
 # Key Slot 1: ENABLED
 # Key Slot 2: DISABLED
