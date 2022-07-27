@@ -30,6 +30,7 @@ __________________________________________________
 <br><br>
 
 # Guides
+- **Notice that the Boot is US Keyboard!**
 
 ## full disk with system
 - Ubuntu 20.04 btrfs-luks full disk encryption including /boot and auto-APT snapshots with Timeshift (https://www.youtube.com/watch?v=yRSElRlp7TQ)
