@@ -33,6 +33,7 @@ __________________________________________________
 - **Notice that the Boot is US Keyboard!**
 
 ## full disk with system
+- **The guide below will use 4GB for swap space but you should use the same amount as much RAM you have
 - Ubuntu 20.04 btrfs-luks full disk encryption including /boot and auto-APT snapshots with Timeshift (https://www.youtube.com/watch?v=yRSElRlp7TQ)
 - https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
 ```bash
