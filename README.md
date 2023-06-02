@@ -60,7 +60,7 @@ mkpart primary 513MiB 4609MiB
 mkpart primary 4609MiB 100%
 q
 
-# create luks partition
+# create luks partition - MAKE SURE TO USE US KEYBOARD
 cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat --type=luks1 /dev/sda3
 
 # map encrypted partition to "cryptdat". You can use other name if you want
