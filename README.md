@@ -71,6 +71,7 @@ mkfs.btrfs /dev/mapper/cryptdata
 
 # install ubuntu
 ubiquity --no-bootloader
+# Choose manual at tab disk setup
 # Select /dev/sda1, press the Change button. Choose Use as ‘EFI System Partition’.
 # Select /dev/sda2, press the Change button. Choose Use as ‘swap area’ to create a swap partition. We will encrypt this partition later in the crypttab.
 # Select the root filesystem device for formatting (/dev/mapper/cryptdata type btrfs on top), press the Change button. Choose Use as ‘btrfs journaling filesystem’, check Format the partition and use ‘/’ as Mount point.
