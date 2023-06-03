@@ -84,6 +84,11 @@ ubiquity --no-bootloader
 
 # Create a chroot environment and enter your system
 mount -o subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd /dev/mapper/cryptdata /mnt
+
+# if you get error "wrong fs type, bad option, bad superblock" try this:
+# sudo mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/sda2 /mnt
+
+
 for i in /dev /dev/pts /proc /sys /run; do sudo mount -B $i /mnt$i; done
 rm /mnt/etc/resolv.conf
 sudo cp /etc/resolv.conf /mnt/etc/
@@ -128,7 +133,12 @@ sed -i "s|none|/etc/luks/boot_os.keyfile|" /etc/crypttab
 # Install the EFI bootloader
 echo "GRUB_ENABLE_CRYPTODISK=y" >> /etc/default/grub
 
+# ubuntu 20.04
 apt install -y --reinstall grub-efi-amd64-signed linux-generic linux-headers-generic linux-generic-hwe-20.04 linux-headers-generic-hwe-20.04
+
+# ubuntu 23.04
+apt install -y --reinstall grub-efi-amd64-signed linux-generic linux-headers-generic
+
 update-initramfs -c -k all
 grub-install /dev/sda
 update-grub
