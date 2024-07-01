@@ -189,6 +189,8 @@ update-grub
 exit
 reboot now
 
+# If you get this error `No shim_lock protocol & load kernel first error` when booting after enter your password then go to BIOS to the boot tab and make sure that you not have selected `Windows UEFI` instead choose `Other OS`
+
 # ---------------------------------------
 
 
