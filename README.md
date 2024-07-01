@@ -36,8 +36,10 @@ __________________________________________________
 - **The guide below will use 4GB for swap space but you should use 1.5 times the amount of RAM
 - Ubuntu 20.04 btrfs-luks full disk encryption including /boot and auto-APT snapshots with Timeshift (https://www.youtube.com/watch?v=yRSElRlp7TQ)
 - https://mutschler.eu/linux/install-guides/ubuntu-btrfs/
+- Tested with Ubuntu/Kubuntu 20.04 - 24.04 and aswell wiith 4TB NVM drive
 ```bash
 # enable EFI for this guide
+# DO NOT ENABLE LEGACY MODE IN BOOT!!
 
 # check if EFI is enabled
 mount | grep efivars
@@ -49,18 +51,30 @@ mount | grep efivars
 # create temp admin sessions
 sudo -i
 
+# check your drive name
+lsblk
+
 # create partitions
 parted /dev/sda
 mklabel gpt
 # EFI
 mkpart primary 1MiB 513MiB
+
 # swap
 mkpart primary 513MiB 4609MiB
+# mkpart primary 513MiB 33268MiB # <-- If you have 64GB RAM
+
 # root
 mkpart primary 4609MiB 100%
+# mkpart primary 33268MiB 100% # <-- If you have 64GB RAM
+
+# exit
 q
 
+# ---------------------------------------------
+
 # create luks partition - MAKE SURE TO USE US KEYBOARD
+# **WARNING** GRUB USES AS DEFAULT US KEYBOARD SO MAKE SURE YOUR PW WAS TYPED WITH US KEYBOARD
 cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksFormat --type=luks1 /dev/sda3
 
 # map encrypted partition to "cryptdat". You can use other name if you want
@@ -71,6 +85,11 @@ mkfs.btrfs /dev/mapper/cryptdata
 
 # install ubuntu
 ubiquity --no-bootloader
+
+# On Ubuntu/Kubuntu 24.04 this will crash the first time after you do the steps from below. Just run it again then it works doe
+
+If it asks to set secure boot password then do it
+
 # Choose manual at tab disk setup
 # Select /dev/sda1, press the Change button. Choose Use as ‘EFI System Partition’.
 # Select /dev/sda2, press the Change button. Choose Use as ‘swap area’ to create a swap partition. We will encrypt this partition later in the crypttab.
@@ -81,25 +100,43 @@ ubiquity --no-bootloader
 
 
 
+# ---------------------------------------
+
 
 # Create a chroot environment and enter your system
-mount -o subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd /dev/mapper/cryptdata /mnt
+
+# maybe needed for older ubuntu version
+# mount -o subvol=@,ssd,noatime,space_cache,commit=120,compress=zstd /dev/mapper/cryptdata /mnt
+
+# I used this for Ubuntu/Kubuntu 23.04 & 24.04
+sudo mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/mapper/cryptdata /mnt
 
 # if you get error "wrong fs type, bad option, bad superblock" try this:
-# sudo mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/sda2 /mnt
+# sudo mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/sda3 /mnt
 
+
+# ---------------------------------------
 
 for i in /dev /dev/pts /proc /sys /run; do sudo mount -B $i /mnt$i; done
 rm /mnt/etc/resolv.conf
 sudo cp /etc/resolv.conf /mnt/etc/
 sudo chroot /mnt
 
+
+# ---------------------------------------
+
+
 # Now you are actually inside your system, so let’s mount all other partitions and have a look at the btrfs subvolumes:
+# If below is not shown especially with /boot/efi then something went wrong. Try again
 mount -av
 # /                        : ignored
 # /boot/efi                : successfully mounted
 # /home                    : successfully mounted
 # none                     : ignored
+
+
+# ---------------------------------------
+
 
 # Create crypttab
 export UUIDSDA3=$(blkid -s UUID -o value /dev/sda3)
@@ -116,6 +153,8 @@ mkdir /etc/luks
 dd if=/dev/urandom of=/etc/luks/boot_os.keyfile bs=4096 count=1
 chmod u=rx,go-rwx /etc/luks
 chmod u=r,go-rwx /etc/luks/boot_os.keyfile
+
+# **WARNING** GRUB USES AS DEFAULT US KEYBOARD SO MAKE SURE YOUR PW WAS TYPED WITH US KEYBOARD
 cryptsetup luksAddKey /dev/sda3 /etc/luks/boot_os.keyfile
 cryptsetup luksDump /dev/sda3 | grep "Key Slot"
 # Key Slot 0: ENABLED
@@ -130,13 +169,17 @@ echo "KEYFILE_PATTERN=/etc/luks/*.keyfile" >> /etc/cryptsetup-initramfs/conf-hoo
 echo "UMASK=0077" >> /etc/initramfs-tools/initramfs.conf
 sed -i "s|none|/etc/luks/boot_os.keyfile|" /etc/crypttab
 
+
+# ---------------------------------------
+
+
 # Install the EFI bootloader
 echo "GRUB_ENABLE_CRYPTODISK=y" >> /etc/default/grub
 
 # ubuntu 20.04
 apt install -y --reinstall grub-efi-amd64-signed linux-generic linux-headers-generic linux-generic-hwe-20.04 linux-headers-generic-hwe-20.04
 
-# ubuntu 23.04
+# ubuntu 23.04 & Ubuntu 24.04
 apt install -y --reinstall grub-efi-amd64-signed linux-generic linux-headers-generic
 
 update-initramfs -c -k all
@@ -146,6 +189,7 @@ update-grub
 exit
 reboot now
 
+# ---------------------------------------
 
 
 
@@ -195,6 +239,29 @@ sudo timeshift-autosnap-apt
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+__________________________________________
+<br><br>
 <br><br>
 
 
