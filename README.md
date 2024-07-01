@@ -399,10 +399,11 @@ sudo cryptsetup --use-random -h sha512 -s 512 -c serpent-xts-plain64 -y -v luksF
 __________________________________________________
 <br><br>
 
-# Decrypt Partition
+# Decrypt/open encrpyted Partition
 ```bash
 sudo cryptsetup luksOpen /dev/yourpartition yourpartition
 ```
+- You can use `cryptsetup close` or `cryptsetup luksClose` to close it again
 
 
 
